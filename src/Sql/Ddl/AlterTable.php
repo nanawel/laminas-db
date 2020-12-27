@@ -63,8 +63,8 @@ class AlterTable extends AbstractSql implements SqlInterface
         self::DROP_CONSTRAINTS => [
             "%1\$s" => [
                 [1 => "DROP CONSTRAINT %1\$s,\n", 'combinedby' => " "],
-            ],
-        ],
+            ]
+        ]
     ];
 
     /** @var string */
