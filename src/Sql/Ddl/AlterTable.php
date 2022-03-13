@@ -3,6 +3,7 @@
 namespace Laminas\Db\Sql\Ddl;
 
 use Laminas\Db\Adapter\Platform\PlatformInterface;
+use Laminas\Db\Metadata\Object\ConstraintObject;
 use Laminas\Db\Sql\AbstractSql;
 use Laminas\Db\Sql\TableIdentifier;
 
@@ -20,7 +21,7 @@ class AlterTable extends AbstractSql implements SqlInterface
     /** @var array */
     protected $addColumns = [];
 
-    /** @var array */
+    /** @var Constraint\ConstraintInterface[] */
     protected $addConstraints = [];
 
     /** @var array */
@@ -29,7 +30,7 @@ class AlterTable extends AbstractSql implements SqlInterface
     /** @var array */
     protected $dropColumns = [];
 
-    /** @var array */
+    /** @var Constraint\ConstraintInterface[]|ConstraintObject[] */
     protected $dropConstraints = [];
 
     /**
@@ -61,7 +62,7 @@ class AlterTable extends AbstractSql implements SqlInterface
         ],
         self::DROP_CONSTRAINTS => [
             "%1\$s" => [
-                [1 => "DROP CONSTRAINT %1\$s,\n", 'combinedby' => ""],
+                [1 => "DROP CONSTRAINT %1\$s,\n", 'combinedby' => " "],
             ],
         ],
     ];
@@ -121,12 +122,12 @@ class AlterTable extends AbstractSql implements SqlInterface
     }
 
     /**
-     * @param  string $name
+     * @param  Constraint\ConstraintInterface|ConstraintObject $constraint
      * @return $this Provides a fluent interface
      */
-    public function dropConstraint($name)
+    public function dropConstraint($constraint)
     {
-        $this->dropConstraints[] = $name;
+        $this->dropConstraints[] = $constraint;
 
         return $this;
     }
@@ -217,7 +218,7 @@ class AlterTable extends AbstractSql implements SqlInterface
     {
         $sqls = [];
         foreach ($this->dropConstraints as $constraint) {
-            $sqls[] = $adapterPlatform->quoteIdentifier($constraint);
+            $sqls[] = $adapterPlatform->quoteIdentifier($constraint->getName());
         }
 
         return [$sqls];

@@ -7,4 +7,9 @@ use Laminas\Db\Sql\ExpressionInterface;
 interface ConstraintInterface extends ExpressionInterface
 {
     public function getColumns();
+
+    /**
+     * @return string
+     */
+    public function getName();
 }
