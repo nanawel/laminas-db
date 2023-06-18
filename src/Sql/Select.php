@@ -191,7 +191,12 @@ class Select extends AbstractPreparableSql
             );
         }
 
-        if (! is_string($table) && ! is_array($table) && ! $table instanceof TableIdentifier) {
+        if (
+            ! is_string($table)
+            && ! is_array($table)
+            && ! $table instanceof TableIdentifier
+            && ! $table instanceof Select
+        ) {
             throw new Exception\InvalidArgumentException(
                 '$table must be a string, array, or an instance of TableIdentifier'
             );
