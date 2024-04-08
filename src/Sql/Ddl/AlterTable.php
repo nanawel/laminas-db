@@ -16,6 +16,7 @@ class AlterTable extends AbstractSql implements SqlInterface
     public const CHANGE_COLUMNS   = 'changeColumns';
     public const DROP_COLUMNS     = 'dropColumns';
     public const DROP_CONSTRAINTS = 'dropConstraints';
+    public const DROP_INDEXES     = 'dropIndexes';
     public const TABLE            = 'table';
 
     /** @var array */
@@ -32,6 +33,9 @@ class AlterTable extends AbstractSql implements SqlInterface
 
     /** @var Constraint\ConstraintInterface[]|ConstraintObject[] */
     protected $dropConstraints = [];
+
+    /** @var array */
+    protected $dropIndexes = [];
 
     /**
      * Specifications for Sql String generation
@@ -62,9 +66,14 @@ class AlterTable extends AbstractSql implements SqlInterface
         ],
         self::DROP_CONSTRAINTS => [
             "%1\$s" => [
-                [1 => "DROP CONSTRAINT %1\$s,\n", 'combinedby' => " "],
-            ]
-        ]
+                [1 => "DROP CONSTRAINT %1\$s,\n", 'combinedby' => ""],
+            ],
+        ],
+        self::DROP_INDEXES     => [
+            '%1$s' => [
+                [1 => "DROP INDEX %1\$s,\n", 'combinedby' => ''],
+            ],
+        ],
     ];
 
     /** @var string */
@@ -143,6 +152,17 @@ class AlterTable extends AbstractSql implements SqlInterface
     }
 
     /**
+     * @param  string $name
+     * @return self Provides a fluent interface
+     */
+    public function dropIndex($name)
+    {
+        $this->dropIndexes[] = $name;
+
+        return $this;
+    }
+
+    /**
      * @param  string|null $key
      * @return array
      */
@@ -155,6 +175,7 @@ class AlterTable extends AbstractSql implements SqlInterface
             self::CHANGE_COLUMNS   => $this->changeColumns,
             self::ADD_CONSTRAINTS  => $this->addConstraints,
             self::DROP_CONSTRAINTS => $this->dropConstraints,
+            self::DROP_INDEXES     => $this->dropIndexes,
         ];
 
         return isset($key) && array_key_exists($key, $rawState) ? $rawState[$key] : $rawState;
@@ -219,6 +240,17 @@ class AlterTable extends AbstractSql implements SqlInterface
         $sqls = [];
         foreach ($this->dropConstraints as $constraint) {
             $sqls[] = $adapterPlatform->quoteIdentifier($constraint->getName());
+        }
+
+        return [$sqls];
+    }
+
+    /** @return string[] */
+    protected function processDropIndexes(?PlatformInterface $adapterPlatform = null)
+    {
+        $sqls = [];
+        foreach ($this->dropIndexes as $index) {
+            $sqls[] = $adapterPlatform->quoteIdentifier($index);
         }
 
         return [$sqls];
